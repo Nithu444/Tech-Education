@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text to Speech, Speech to Text & Image to Audio</title>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #2C3E50;
+            color: white;
+            padding: 20px;
+        }
+        .main-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        .container {
+            width: 400px;
+            background: #34495E;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        input, button {
+            width: 90%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: none;
+            font-size: 16px;
+        }
+        button {
+            background: #27AE60;
+            color: white;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover {
+            background: #2ECC71;
+        }
+        .reset { background: #F39C12; }
+        .reset:hover { background: #F1C40F; }
+        .exit { background: #E74C3C; }
+        .exit:hover { background: #C0392B; }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="container">
+            <h2>Text to Speech & Image to Audio</h2>
+            <input type="text" id="text" placeholder="Enter text here...">
+            <br>
+            <button onclick="speakText()">PLAY</button>
+            <button class="reset" onclick="resetText()">RESET</button>
+            <button class="exit" onclick="exitApp()">EXIT</button>
+            <br>
+            <h3>Upload Image</h3>
+            <input type="file" id="imageInput" accept="image/*">
+            <button onclick="extractTextFromImage()">Convert Image to Audio</button>
+        </div>
+        
+        <div class="container">
+            <h2>Speech to Text</h2>
+            <button onclick="startSpeechRecognition()">Start Speaking</button>
+            <p id="speechOutput">Your speech will appear here...</p>
+        </div>
+    </div>
+
+    <script>
+        function speakText() {
+            let text = document.getElementById("text").value;
+            if (text.trim() === "") {
+                alert("Please enter some text!");
+                return;
+            }
+            let speech = new SpeechSynthesisUtterance(text);
+            window.speechSynthesis.speak(speech);
+        }
+
+        function startSpeechRecognition() {
+            let recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'en-US';
+            recognition.start();
+            
+            recognition.onresult = function(event) {
+                document.getElementById("speechOutput").innerText = event.results[0][0].transcript;
+            };
+        }
+
+        function resetText() {
+            document.getElementById("text").value = "";
+        }
+
+        function exitApp() {
+            window.close();
+        }
+
+        function extractTextFromImage() {
+            let imageInput = document.getElementById("imageInput").files[0];
+            if (!imageInput) {
+                alert("Please upload an image!");
+                return;
+            }
+            
+            let reader = new FileReader();
+            reader.onload = function() {
+                Tesseract.recognize(reader.result, 'eng').then(({ data: { text } }) => {
+                    document.getElementById("text").value = text;
+                    speakText();
+                });
+            };
+            reader.readAsDataURL(imageInput);
+        }
+    </script>
+</body>
+</html>
